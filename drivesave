@@ -1,0 +1,155 @@
+var channelToken = "";
+var gdrivefolderId = "";
+var gdrivefolderImageId = "";
+var gdrivefolderVideoId = "";
+var gdrivefolderAudioId = "";
+
+
+function replyMsg(replyToken, mess, channelToken) {
+varurl = 'https://api.line.me/v2/bot/message/reply';
+varopt = {
+'headers': {
+'Content-Type': 'application/json; charset=UTF-8',
+'Authorization': 'Bearer ' + channelToken,
+},
+'method': 'post',
+'payload': JSON.stringify({
+'replyToken': replyToken,
+'messages': mess
+})
+};
+UrlFetchApp.fetch(url, opt);
+}
+
+
+function toDrive(messageId, meType, mType, gdriveId, channelToken) {
+varurl = "https://api-data.line.me/v2/bot/message/" + messageId + "/content";
+varheaders = {
+"headers": { "Authorization": "Bearer " + channelToken }
+};
+vargetcontent = UrlFetchApp.fetch(url, headers);
+varblob = getcontent.getBlob();
+varfileBlob = Utilities.newBlob(blob.getBytes(), meType, messageId + mType);
+varrid = DriveApp.getFolderById(gdriveId).createFile(fileBlob).getId();
+returnx = 'https://drive.google.com/uc?id=' + rid;
+}
+
+
+function searchFilesByName(folderId, fileName) {
+varfolder = DriveApp.getFolderById(folderId);
+varfiles = folder.searchFiles('title contains "' + fileName + '"');
+varfileDetails = [];
+while (files.hasNext()) {
+varfile = files.next();
+varfileData = {
+name: file.getName(),
+url: 'https://drive.google.com/file/d/' + file.getId() + '/view',
+};
+fileDetails.push(fileData['name']);
+fileDetails.push(fileData['url']);
+}
+fileDetails.sort(function (a, b) {
+returnnewDate(b.date) - newDate(a.date);
+});
+returnfileDetails;
+}
+
+
+
+function getAllFileNames(fileName) {
+varallFileNames = [];
+allFileNames.push(searchFilesByName(gdrivefolderId, fileName));
+allFileNames.push(searchFilesByName(gdrivefolderImageId, fileName));
+allFileNames.push(searchFilesByName(gdrivefolderVideoId, fileName));
+allFileNames.push(searchFilesByName(gdrivefolderAudioId, fileName));
+allFileNames = allFileNames.flat();
+varresultString = '';
+for (leti = 0; i < allFileNames.length; i += 2) {
+consttitle = allFileNames[i];
+constlink = allFileNames[i + 1];
+resultString += `${title}nลิงก์: ${link}nn`;
+}
+returnresultString;
+}
+
+
+
+function doPost(e) {
+varvalue = JSON.parse(e.postData.contents);
+varevents = value.events;
+varevent = events[0];
+vartype = event.type;
+varreplyToken = event.replyToken;
+switch (type) {
+case'message':
+varmessageType = event.message.type;
+varmessageId = event.message.id;
+if (messageType == 'file') {
+varfileName = event.message.fileName;
+varfileType = fileName.split('.', 2)[1];
+varfileN = fileName.split('.', 2)[0];
+if (fileType == "pdf") { varmimetype = "application/pdf"; }
+elseif (fileType == "zip") { varmimetype = "application/zip"; }
+elseif (fileType == "rar") { varmimetype = "application/vnd.rar"; }
+elseif (fileType == "7z") { varmimetype = "application/x-7z-compressed"; }
+elseif (fileType == "doc") { varmimetype = "application/msword"; }
+elseif (fileType == "xls") { varmimetype = "application/vnd.ms-excel"; }
+elseif (fileType == "ppt") { varmimetype = "application/vnd.ms-powerpoint"; }
+elseif (fileType == "docx") { varmimetype = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"; }
+elseif (fileType == "xlsx") { varmimetype = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"; }
+elseif (fileType == "pptx") { varmimetype = "application/vnd.openxmlformats-officedocument.presentationml.presentation"; }
+elseif (fileType == "mp4") { varmimetype = "video/mp4"; }
+elseif (fileType == "mp3") { varmimetype = "audio/mpeg"; }
+elseif (fileType == "png") { varmimetype = "image/png"; }
+elseif (fileType == "gif") { varmimetype = "image/gif"; }
+elseif (fileType == "jpg") { varmimetype = "image/jpeg"; }
+elseif (fileType == "jpeg") { varmimetype = "image/jpeg"; }
+else { varmimetype = "undefined"; }
+
+
+if (mimetype !== "undefined") {
+varurl = "https://api-data.line.me/v2/bot/message/" + messageId + "/content";
+varheaders = { "headers": { "Authorization": "Bearer " + channelToken } };
+vargetcontent = UrlFetchApp.fetch(url, headers);
+varblob = getcontent.getBlob();
+varfileBlob = Utilities.newBlob(blob.getBytes(), mimetype, fileN + '.' + fileType);
+vargdfileid = DriveApp.getFolderById(gdrivefolderId).createFile(fileBlob).getId();
+varmess = [{ 'type': 'text', 'text': "https://drive.google.com/file/d/" + gdfileid + "/view" }];
+} else {
+varmess = [{ 'type': 'text', 'text': "ไม่รองรับไฟล์ประเภทนี้" }];
+}
+}
+elseif (messageType == 'image') {
+varmType = ".jpg";
+varmeType = "image/jpeg";
+varx = toDrive(messageId, meType, mType, gdrivefolderImageId, channelToken);
+varmess = [{ 'type': 'text', 'text': x }];
+}
+elseif (messageType == 'video') {
+varmType = ".mp4";
+varmeType = "video/mp4";
+varx = toDrive(messageId, meType, mType, gdrivefolderVideoId, channelToken);
+varmess = [{ 'type': 'text', 'text': x }];
+}
+elseif (messageType == 'audio') {
+varmType = ".mp3";
+varmeType = "audio/mpeg";
+varx = toDrive(messageId, meType, mType, gdrivefolderAudioId, channelToken);
+varmess = [{ 'type': 'text', 'text': x }];
+} else if (messageType == 'text') {
+varuserMessage = event.message.text;
+varuserMessagexx = getAllFileNames(userMessage)
+if (userMessagexx == "") {
+varmess = [{ 'type': 'text', 'text': 'ไม่พบไฟล์ที่ค้นหา' }];
+} else {
+varmess = [{ 'type': 'text', 'text': userMessagexx }];
+}
+}
+if (mess) { replyMsg(replyToken, mess, channelToken); }
+break;
+default:
+break;
+}
+}
+
+
