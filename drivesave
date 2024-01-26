@@ -1,8 +1,8 @@
-var channelToken = "ylYb9YrenJb5P+Enk/8CSHwwwj9hrqc7WcjSzutj9gGaB3EvQqraQNgwrcMsVhupoTDoLz5xIPZl8TQ7mElLV4mVvM4/jcZwU36Z4HRHVuJo+hY+Nm77+N41h90QFS5LQViMh5/rzRfx5K0eDkQw9AdB04t89/1O/w1cDnyilFU=";
-var gdrivefolderId = "1AXH3ghY_BXarY-bPLv3FSV4am-EnN6le";
-var gdrivefolderImageId = "15BfmxTWfeAi1L7KMdSryt6LjJV5gpZSD";
-var gdrivefolderVideoId = "1wult8SHJqo1B9VqO0JC1aGknHCTw7OMS";
-var gdrivefolderAudioId = "1CXkgpI42eEwD45cA4mpzGGyYowb0i-CU";
+var channelToken = "#";
+var gdrivefolderId = "";
+var gdrivefolderImageId = "";
+var gdrivefolderVideoId = "";
+var gdrivefolderAudioId = "";
 
 function replyMsg(replyToken, mess, channelToken) {
   var url = 'https://api.line.me/v2/bot/message/reply';
